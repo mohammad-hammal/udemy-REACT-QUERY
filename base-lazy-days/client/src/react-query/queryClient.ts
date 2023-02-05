@@ -1,18 +1,30 @@
-// import { createStandaloneToast } from '@chakra-ui/react';
-// import { theme } from '../theme';
+import { createStandaloneToast } from '@chakra-ui/react';
+import { MutationCache, QueryCache, QueryClient } from '@tanstack/react-query';
 
-// const toast = createStandaloneToast({ theme });
+import { theme } from '../theme';
 
-// function queryErrorHandler(error: unknown): void {
-//   // error is type unknown because in js, anything can be an error (e.g. throw(5))
-//   const id = 'react-query-error';
-//   const title =
-//     error instanceof Error ? error.message : 'error connecting to server';
+const toast = createStandaloneToast({ theme });
 
-//   // prevent duplicate toasts
-//   toast.closeAll();
-//   toast({ id, title, status: 'error', variant: 'subtle', isClosable: true });
-// }
+function queryErrorHandler(error: unknown): void {
+  // error is type unknown because in js, anything can be an error (e.g. throw(5))
+  const title =
+    error instanceof Error ? error.message : 'error connecting to server';
 
-// to satisfy typescript until this file has uncommented contents
-export {};
+  toast({ title, status: 'error', variant: 'subtle', isClosable: true });
+}
+
+export const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: queryErrorHandler,
+  }),
+  mutationCache: new MutationCache({
+    onError: queryErrorHandler,
+  }),
+  defaultOptions: {
+    queries: {
+      // all those option to make this query not run so many times because the data update is not that important to the user
+      staleTime: 600000, // 10 minutes stale time mean that data is still fresh and don't need to get new data
+      cacheTime: 900000, // 15 minutes
+    },
+  },
+});
